@@ -15,6 +15,15 @@ public class Token {
         return tokenName + ":" + lineNo;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Token){
+            Token other = (Token)obj;
+            return other.getTokenName().equals(this.getTokenName());
+        }
+        return false;
+    }
+
     public String getTokenName() {
         return tokenName;
     }

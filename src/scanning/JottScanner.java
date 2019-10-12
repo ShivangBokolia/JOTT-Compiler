@@ -13,10 +13,16 @@ public class JottScanner {
         this.tokenQueue = new ArrayList<>();
     }
 
+    /*
+    Errors: 123! works for some reason.
+            Syntax error to take care of.
+     */
+
     public List<Token> scanFile() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String line;
             int lineNo = 0;
+            boolean flag = true;
             while ((line = bufferedReader.readLine()) != null) {
                 lineNo += 1;
                 for (int i = 0; i < line.length(); i++) {
@@ -43,15 +49,28 @@ public class JottScanner {
                     else{
                         //checking for the strings that begin " and end with ".
                         if (line.charAt(i) == '\"'){
+                            flag = false;
                             int index = i + 1;
                             String tokenChar = "\"";
                             while(index < line.length() && line.charAt(index) != '\"'){
                                 tokenChar = tokenChar.concat(Character.toString(line.charAt(index)));
                                 index = index + 1;
                             }
-                            i = index;
-                            tokenChar = tokenChar + "\"";
-                            tokenQueue.add(new Token(tokenChar, lineNo));
+                            if (index <= line.length() - 1){
+                                if(line.charAt(index) == '\"'){
+                                    tokenChar = tokenChar + "\"";
+                                    flag = true;
+                                }
+                            }
+                            if (flag){
+                                i = index;
+                                tokenQueue.add(new Token(tokenChar, lineNo));
+                            } else{
+                                System.out.println("Error occured because the quote wasn't found");
+                                System.exit(0);
+                            }
+//                            i = index;
+//                            tokenQueue.add(new Token(tokenChar, lineNo));
                         }
                         else{
                             String tokenChar = "";
