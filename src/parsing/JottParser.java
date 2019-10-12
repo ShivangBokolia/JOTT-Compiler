@@ -314,8 +314,10 @@ public class JottParser {
                 }
             }
             else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName())){
-                Node id = new Node("id", parent);
-                parent.addChild(id);
+                Node iExpr = new Node("i_expr", parent);
+                parent.addChild(iExpr);
+                Node id = new Node("id", iExpr);
+                iExpr.addChild(id);
                 Node number = new Node(tokenList.remove(0), id);
                 id.addChild(number);
                 if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
@@ -364,8 +366,10 @@ public class JottParser {
                 }
             }
             else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName())){
-                Node id = new Node("id", parent);
-                parent.addChild(id);
+                Node dExpr = new Node("d_expr", parent);
+                parent.addChild(dExpr);
+                Node id = new Node("id", dExpr);
+                dExpr.addChild(id);
                 Node number = new Node(tokenList.remove(0), id);
                 id.addChild(number);
                 if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){

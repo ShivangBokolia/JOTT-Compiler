@@ -1,3 +1,5 @@
+import execution.JottRunner;
+import parsing.JottDecorator;
 import parsing.JottGrammar;
 import parsing.JottParser;
 import parsing.Node;
@@ -24,8 +26,15 @@ public class Main {
 
         JottParser parser = new JottParser();
         Node root = parser.parseTake2(result);
-        root.inorderPrint();
+//        root.inorderPrint();
 
-//        System.out.println(JottParser.symbolTable);
+        Node decoratedTreeRoot = new Node("program", null);
+
+        JottDecorator decoratoredTree = new JottDecorator();
+        decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
+//        decoratedTreeRoot.inorderPrint();
+
+        JottRunner runner = new JottRunner();
+        runner.runCode(decoratedTreeRoot);
     }
 }
