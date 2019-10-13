@@ -96,8 +96,6 @@ public class JottParser {
             }
         }
         else{
-            //check if the ID already exists??????????
-
             if(newChild.getData().equals("id")){
                 Token idToken = oneLine.remove(0);
                 String idString = idToken.getTokenName();
@@ -141,7 +139,8 @@ public class JottParser {
                     }
                 }
                 else{
-                    System.out.println("Error 2");
+                    System.out.println("Invalid ID Name, " + "\"" + idToken.getLine() + "\" (" + idToken.getFileName() + ":" +idToken.getLineNo() +")");
+                    System.exit(-1);
                 }
             }
             else if (newChild.getData().equals("expr")){
@@ -221,83 +220,6 @@ public class JottParser {
         return true;
     }
 
-//    private void iExprParse (Node parent, List<Token> tokenList){
-//        boolean flag = false;
-//        //Checking for the positive number or var at position 0
-//        if (tokenList.size() > 1 && this.ops.contains(tokenList.get(1).getTokenName())){
-//            //The classic ID check
-//            if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0))){
-//                Node iExpr = new Node("i_expr", parent);
-//                parent.addChild(iExpr);
-//                Node id = new Node("id", iExpr);
-//                iExpr.addChild(id);
-//                Node number = new Node(tokenList.remove(0), id);
-//                id.addChild(number);
-//                iExprParse(iExpr, tokenList);
-//            }
-//            //The classic Integer check
-//            else if (isInteger(tokenList.get(0).getTokenName())){
-//                Node iExpr = new Node("i_expr", parent);
-//                parent.addChild(iExpr);
-//                Node newInt = new Node("int", iExpr);
-//                iExpr.addChild(newInt);
-//                Node number = new Node(tokenList.remove(0), newInt);
-//                newInt.addChild(number);
-//                iExprParse(iExpr, tokenList);
-//            }
-//            //The classic op check
-//            else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0,1))){
-//                Node op = new Node("op", parent);
-//                parent.addChild(op);
-//                Node opValue = new Node(tokenList.remove(0), op);
-//                op.addChild(opValue);
-//                iExprParse(parent, tokenList);
-//            }
-//        }
-//        //checking if the op is a op
-//        else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0,1))){
-//            Node op = new Node("op", parent);
-//            parent.addChild(op);
-//            Node opValue = new Node(tokenList.remove(0), op);
-//            op.addChild(opValue);
-//            iExprParse(op, tokenList);
-//        }
-//        //checking if the op is a sign
-//        else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0, 1)) && isInteger(tokenList.get(1).getTokenName())){
-//            Token sign = tokenList.remove(0);
-//            Token integer = tokenList.remove(0);
-//            Token signedInt = new Token(sign.getTokenName() + integer.getTokenName(), integer.getLineNo());
-//            Node iExpr = new Node("i_expr", parent);
-//            parent.addChild(iExpr);
-//            Node newInt = new Node("int", iExpr);
-//            iExpr.addChild(newInt);
-//            Node number = new Node(signedInt, newInt);
-//            newInt.addChild(number);
-//            if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";")){
-//                iExprParse(iExpr, tokenList);
-//            }
-//        }
-//        //checking if the element is a var or ID
-//        else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0))){
-//            Node iExpr = new Node("i_expr", parent);
-//            parent.addChild(iExpr);
-//            Node id = new Node(tokenList.remove(0), iExpr);
-//            iExpr.addChild(id);
-//        }
-//        //checking if the element is an integer
-//        else if (isInteger(tokenList.get(0).getTokenName())){
-//            Node iExpr = new Node("i_expr", parent);
-//            parent.addChild(iExpr);
-//            Node newInt = new Node("int", iExpr);
-//            iExpr.addChild(newInt);
-//            Node number = new Node(tokenList.remove(0), newInt);
-//            newInt.addChild(number);
-//        }
-//        else {
-//            System.out.println("ERROR!!!!!");
-//        }
-//    }
-
     private void iExprParse (Node parent, List<Token> tokenList, boolean begin, boolean isOp){
         if (begin || isOp){
             if (signs.contains(tokenList.get(0).getTokenName())){
@@ -321,7 +243,7 @@ public class JottParser {
                     iExprParse(parent, tokenList, false, false);
                 }
             }
-            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName())){
+            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName()) && symbolTable.get(tokenList.get(0).getTokenName()).equals("Integer")){
                 Node iExpr = new Node("i_expr", parent);
                 parent.addChild(iExpr);
                 Node id = new Node("id", iExpr);
@@ -333,7 +255,8 @@ public class JottParser {
                 }
             }
             else{
-                System.out.println("ERRRORRROROORORORORORORORO");
+                System.out.println("Syntax Error: Type Mismatch: Expected Integer, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+                System.exit(-1);
             }
         }
         else if (ops.contains(tokenList.get(0).getTokenName()) && !isOp){
@@ -346,7 +269,8 @@ public class JottParser {
             iExprParse(iExpr, tokenList, false, true);
         }
         else{
-            System.out.println("SOME ERROROROROR");
+            System.out.println("Invalid Operator/Sign, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+            System.exit(-1);
         }
     }
 
@@ -373,7 +297,7 @@ public class JottParser {
                     dExprParse(parent, tokenList, false, false);
                 }
             }
-            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName())){
+            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName()) && symbolTable.get(tokenList.get(0).getTokenName()).equals("Double")){
                 Node dExpr = new Node("d_expr", parent);
                 parent.addChild(dExpr);
                 Node id = new Node("id", dExpr);
@@ -385,7 +309,8 @@ public class JottParser {
                 }
             }
             else{
-                System.out.println("ERRRORRROROORORORORORORORO");
+                System.out.println("Syntax Error: Type Mismatch: Expected Double, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+                System.exit(-1);
             }
         }
         else if (ops.contains(tokenList.get(0).getTokenName()) && !isOp){
@@ -398,86 +323,13 @@ public class JottParser {
             dExprParse(dExpr, tokenList, false, true);
         }
         else{
-            System.out.println("SOME ERROROROROR");
+            System.out.println("Invalid Operator/Sign, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+            System.exit(-1);
         }
     }
 
-//    private void dExprParse (Node parent, List<Token> tokenList){
-//        if (tokenList.size() > 1 && this.ops.contains(tokenList.get(1).getTokenName())){
-//            if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0))){
-//                Node dExpr = new Node("d_expr", parent);
-//                parent.addChild(dExpr);
-//                Node id = new Node("id", dExpr);
-//                dExpr.addChild(id);
-//                Node number = new Node(tokenList.remove(0), id);
-//                id.addChild(number);
-//                dExprParse(dExpr, tokenList);
-//            }
-//            else if (isDouble(tokenList.get(0).getTokenName())){
-//                Node dExpr = new Node("d_expr", parent);
-//                parent.addChild(dExpr);
-//                Node newDouble = new Node("dbl", dExpr);
-//                dExpr.addChild(newDouble);
-//                Node number = new Node(tokenList.remove(0), newDouble);
-//                newDouble.addChild(number);
-//                dExprParse(dExpr, tokenList);
-//            }
-//            else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0,1))){
-//                Node op = new Node("op", parent);
-//                parent.addChild(op);
-//                Node opValue = new Node(tokenList.remove(0), op);
-//                op.addChild(opValue);
-//                dExprParse(parent, tokenList);
-//            }
-//        }
-//        else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0, 1)) && isDouble(tokenList.get(1).getTokenName())){
-//            Token sign = tokenList.remove(0);
-//            Token dbl = tokenList.remove(0);
-//            Token signedDouble = new Token(sign.getTokenName() + dbl.getTokenName(), dbl.getLineNo());
-//            Node dExpr = new Node("d_expr", parent);
-//            parent.addChild(dExpr);
-//            Node newDouble = new Node("dbl", dExpr);
-//            dExpr.addChild(newDouble);
-//            Node number = new Node(signedDouble, newDouble);
-//            newDouble.addChild(number);
-//            if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";")){
-//                dExprParse(dExpr, tokenList);
-//            }
-//        }
-//        else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0))){
-//            Node dExpr = new Node("d_expr", parent);
-//            parent.addChild(dExpr);
-//            Node id = new Node(tokenList.remove(0), dExpr);
-//            dExpr.addChild(id);
-//        }
-//        else if (isDouble(tokenList.get(0).getTokenName())){
-//            Node dExpr = new Node("d_expr", parent);
-//            parent.addChild(dExpr);
-//            Node newDouble = new Node("dbl", dExpr);
-//            dExpr.addChild(newDouble);
-//            Node number = new Node(tokenList.remove(0), newDouble);
-//            newDouble.addChild(number);
-//        }
-//        else if (this.ops.contains(tokenList.get(0).getTokenName().substring(0,1))){
-//            Node op = new Node("op", parent);
-//            parent.addChild(op);
-//            Node opValue = new Node(tokenList.remove(0), op);
-//            op.addChild(opValue);
-//        }
-//        else {
-//            System.out.println("ERROR!!!!!");
-//        }
-//    }
-
     private void sExprParse(Node parent, List<Token> tokenList){
-        if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName())){
-//            Node sExpr = new Node("s_expr", parent);
-//            parent.addChild(sExpr);
-//            Node id = new Node("id", sExpr);
-//            sExpr.addChild(id);
-//            Node number = new Node(tokenList.remove(0), id);
-//            id.addChild(number);
-//            dExprParse(sExpr, tokenList, true, false);
+        if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && symbolTable.containsKey(tokenList.get(0).getTokenName()) && symbolTable.get(tokenList.get(0).getTokenName()).equals("String")){
             Node id = new Node("id", parent);
             parent.addChild(id);
             Node idNode = new Node(tokenList.remove(0), id);
@@ -503,7 +355,8 @@ public class JottParser {
             }
         }
         else{
-            System.out.println("ERRORRRRRR");
+            System.out.println("Syntax Error: Type Mismatch: Expected String, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+            System.exit(-1);
         }
     }
 
@@ -525,12 +378,9 @@ public class JottParser {
                 parent.addChild(sExpr);
                 sExprParse(sExpr, tokenList);
             }else{
-                System.out.println("NO CLUE EERROR!!!!");
+                System.out.println("Invalid Type for ID, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+                System.exit(-1);
             }
-//            Node id = new Node("id", parent);
-//            parent.addChild(id);
-//            Node idNode = new Node(tokenList.remove(0), id);
-//            id.addChild(idNode);
         }
         else if (tokenList.get(0).getTokenName().equals("-")){
             if (isInteger(tokenList.get(1).getTokenName())){
@@ -557,7 +407,8 @@ public class JottParser {
             sExprParse(sExpr, tokenList);
         }
         else{
-            System.out.println("ERRORRRORORORORO!!!!!!!!");
+            System.out.println("Invalid Syntax, " + "\"" + tokenList.get(0).getLine() + "\" (" + tokenList.get(0).getFileName() + ":" +tokenList.get(0).getLineNo() +")");
+            System.exit(-1);
         }
 
     }

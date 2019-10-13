@@ -9,7 +9,7 @@ import scanning.Token;
 import java.util.List;
 import java.util.Map;
 
-public class Main {
+public class Jott {
 
     public static void main(String [] args){
         if (args.length < 3){
@@ -18,21 +18,12 @@ public class Main {
         }
         JottScanner jottScanner = new JottScanner(args[2]);
         List<Token> result = jottScanner.scanFile();
-//        for(Token r: result){
-//            System.out.println(r);
-//        }
-
         JottGrammar.buildGrammar();
-
         JottParser parser = new JottParser();
         Node root = parser.parseTake2(result);
-//        root.inorderPrint();
-
         Node decoratedTreeRoot = new Node("program", null);
-
         JottDecorator decoratoredTree = new JottDecorator();
         decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
-//        decoratedTreeRoot.inorderPrint();
 
         JottRunner runner = new JottRunner();
         runner.runCode(decoratedTreeRoot);

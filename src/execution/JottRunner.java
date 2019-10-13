@@ -36,6 +36,10 @@ public class JottRunner {
             }else if (op.equals("*")){
                 accum *= operand;
             }else if (op.equals("/")){
+                if (operand == 0){
+                    System.out.println("Runtime Error: Divide by 0, " + "\"" + ((Token) valueNode.getChild(i+1).getData()).getLine() + "\" (" + ((Token) valueNode.getChild(i+1).getData()).getFileName() + ":" +((Token) valueNode.getChild(i+1).getData()).getLineNo() +")");
+                    System.exit(-1);
+                }
                 accum /= operand;
             }else if (op.equals("^")){
                 accum = (int)Math.pow(accum, operand);
@@ -69,6 +73,10 @@ public class JottRunner {
             }else if (op.equals("*")){
                 accum *= operand;
             }else if (op.equals("/")){
+                if (operand == 0){
+                    System.out.println("Runtime Error: Divide by 0, " + "\"" + ((Token) valueNode.getChild(i+1).getData()).getLine() + "\" (" + ((Token) valueNode.getChild(i+1).getData()).getFileName() + ":" +((Token) valueNode.getChild(i+1).getData()).getLineNo() +")");
+                    System.exit(-1);
+                }
                 accum /= operand;
             }else if (op.equals("^")){
                 accum = Math.pow(accum, operand);
@@ -90,6 +98,10 @@ public class JottRunner {
         else if ((((Token) valueNode.getChild(0).getData()).getTokenName()).equals("charAt")){
             String string1 = evaluateString(valueNode.getChild(0).getChild(0));
             int index = evaluateInteger(valueNode.getChild(0).getChild(1));
+            if (!(index >= 0) || !(index < string1.length())){
+                System.out.println("Index out of range error " +":" + index + ", "+ "\"" + ((Token) valueNode.getChild(0).getData()).getLine() +"\" (" + ((Token) valueNode.getChild(0).getData()).getFileName() +":" + ((Token) valueNode.getChild(0).getData()).getLineNo() +")");
+                System.exit(-1);
+            }
             return String.valueOf(string1.charAt(index));
         }
         else{

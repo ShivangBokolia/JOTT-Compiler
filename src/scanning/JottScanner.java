@@ -70,7 +70,7 @@ public class JottScanner {
                             //checking for char and digit in a token
                             if (Character.isLetter(line.charAt(i))){
                                 while(i + 1 < line.length()){
-                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' ||
+                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' '){
@@ -87,7 +87,7 @@ public class JottScanner {
                             //checking for only digits and decimals in the token
                             else if (Character.isDigit(line.charAt(i))){
                                 while(i + 1 < line.length()){
-                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' ||
+                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
@@ -105,7 +105,7 @@ public class JottScanner {
                             else if (line.charAt(i) == '.'){
                                 //combination for while and if possible
                                 while(i + 1 < line.length()){
-                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' ||
+                                    if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
