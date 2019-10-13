@@ -13,11 +13,11 @@ public class Jott {
 
     public static void main(String [] args){
 //        System.out.println(args[0]);
-        if (args.length != 3){
+        if (args.length != 1){
             System.out.println("Usage: java Jott filename");
             System.exit(-1);
         }
-        JottScanner jottScanner = new JottScanner(args[2]);
+        JottScanner jottScanner = new JottScanner(args[0]);
         List<Token> result = jottScanner.scanFile();
         JottGrammar.buildGrammar();
         JottParser parser = new JottParser();
