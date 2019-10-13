@@ -23,7 +23,12 @@ public class JottRunner {
         List<Node> values = valueNode.getChildren();
         for (int i=1; i<values.size(); i+=2){
             String op = (((Token)valueNode.getChild(i).getData()).getTokenName());
-            int operand = Integer.parseInt(((Token)valueNode.getChild(i+1).getData()).getTokenName());
+            int operand;
+            if (valueTable.containsKey(((Token)valueNode.getChild(i+1).getData()).getTokenName())) {
+                operand = Integer.parseInt(valueTable.get(((Token)valueNode.getChild(i+1).getData()).getTokenName()));
+            } else{
+                operand = Integer.parseInt(((Token)valueNode.getChild(i+1).getData()).getTokenName());
+            }
             if (op.equals("+")){
                 accum += operand;
             }else if (op.equals("-")){
@@ -31,7 +36,7 @@ public class JottRunner {
             }else if (op.equals("*")){
                 accum *= operand;
             }else if (op.equals("/")){
-                accum -= operand;
+                accum /= operand;
             }else if (op.equals("^")){
                 accum = (int)Math.pow(accum, operand);
             }
@@ -51,7 +56,12 @@ public class JottRunner {
         List<Node> values = valueNode.getChildren();
         for (int i=1; i<values.size(); i+=2){
             String op = (((Token)valueNode.getChild(i).getData()).getTokenName());
-            double operand = Double.parseDouble(((Token)valueNode.getChild(i+1).getData()).getTokenName());
+            double operand;
+            if (valueTable.containsKey(((Token)valueNode.getChild(i+1).getData()).getTokenName())){
+                operand = Double.parseDouble(valueTable.get(((Token)valueNode.getChild(i+1).getData()).getTokenName()));
+            }else {
+                operand = Double.parseDouble(((Token) valueNode.getChild(i + 1).getData()).getTokenName());
+            }
             if (op.equals("+")){
                 accum += operand;
             }else if (op.equals("-")){
@@ -59,7 +69,7 @@ public class JottRunner {
             }else if (op.equals("*")){
                 accum *= operand;
             }else if (op.equals("/")){
-                accum -= operand;
+                accum /= operand;
             }else if (op.equals("^")){
                 accum = Math.pow(accum, operand);
             }

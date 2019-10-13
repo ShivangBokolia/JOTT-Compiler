@@ -13,11 +13,6 @@ public class JottScanner {
         this.tokenQueue = new ArrayList<>();
     }
 
-    /*
-    Errors: 123! works for some reason.
-            Syntax error to take care of.
-     */
-
     public List<Token> scanFile() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -35,7 +30,7 @@ public class JottScanner {
                             line.charAt(i) == '*' || line.charAt(i) == '^' || line.charAt(i) == ',' ||
                             line.charAt(i) == '(' || line.charAt(i) == ')' || line.charAt(i) == ';' ||
                             line.charAt(i) == '=') {
-                        tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo));
+                        tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo, fileName, line));
                     }
                     //detecting the comments
                     else if (line.charAt(i) == '/'){
@@ -43,7 +38,7 @@ public class JottScanner {
                             break;
                         }
                         else{
-                            tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo));
+                            tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo, fileName, line));
                         }
                     }
                     else{
@@ -64,13 +59,11 @@ public class JottScanner {
                             }
                             if (flag){
                                 i = index;
-                                tokenQueue.add(new Token(tokenChar, lineNo));
+                                tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                             } else{
-                                System.out.println("Error occured because the quote wasn't found");
-                                System.exit(0);
+                                System.out.println("Syntax Error: Missing \", " + "\"" +line+ "\" (" + " " + fileName+":"+lineNo + ")");
+                                System.exit(-1);
                             }
-//                            i = index;
-//                            tokenQueue.add(new Token(tokenChar, lineNo));
                         }
                         else{
                             String tokenChar = "";
@@ -82,7 +75,7 @@ public class JottScanner {
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' '){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
-                                        tokenQueue.add(new Token(tokenChar, lineNo));
+                                        tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
                                     }
                                     else{
@@ -99,7 +92,7 @@ public class JottScanner {
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
-                                        tokenQueue.add(new Token(tokenChar, lineNo));
+                                        tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
                                     }
                                     else{
@@ -117,7 +110,7 @@ public class JottScanner {
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
                                             line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
-                                        tokenQueue.add(new Token(tokenChar, lineNo));
+                                        tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
                                     }
                                     else{

@@ -3,11 +3,14 @@ package scanning;
 public class Token {
     private String tokenName;
     private int lineNo;
-    //private int columnNo;
+    private String fileName;
+    private String line;
 
-    public Token(String tokenName, int lineNo){
+    public Token(String tokenName, int lineNo, String fileName, String line){
         this.tokenName = tokenName;
         this.lineNo = lineNo;
+        this.fileName = fileName;
+        this.line = line;
     }
 
     @Override
@@ -30,5 +33,13 @@ public class Token {
 
     public int getLineNo() {
         return lineNo;
+    }
+
+    public String getFileName(){
+        return fileName;
+    }
+
+    public String getLine(){
+        return line;
     }
 }

@@ -2,35 +2,39 @@ package parsing;
 
 import scanning.Token;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class JottParser {
 
     public static Map<String, String> symbolTable = new HashMap<>();
 
-    private ArrayList<String> ops = new ArrayList<>(Arrays.asList("+", "-", "*", "/"));
+    private ArrayList<String> ops = new ArrayList<>(Arrays.asList("+", "-", "*", "/", "^"));
     private ArrayList<String> lowerCase = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private ArrayList<String> digits = new ArrayList<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"));
     private ArrayList<String> signs = new ArrayList<>(Arrays.asList("+", "-", ""));
 
     public Node parseTake2(List<Token> tokenList) {
+
         Node root = new Node("program", null);
         Node firstSmt = new Node("stmt_list", root);
         root.addChild(firstSmt);
         int lineCount = 1;
         Node branchStart = firstSmt;
-
         while (!tokenList.isEmpty()) {
             List<Token> oneLine = new ArrayList<>();
-//            while (!(tokenList.isEmpty()) && tokenList.get(0).getLineNo() == lineCount) {
-//                oneLine.add(tokenList.remove(0));
-//            }
             //Using ; as a parameter to move to the next statement
-            while (!(tokenList.isEmpty()) && !(tokenList.get(0).getTokenName().equals(";"))){
+            String line = tokenList.get(0).getLine();
+            int lineNo = tokenList.get(0).getLineNo();
+            String fileName = tokenList.get(0).getFileName();
+            while (!(tokenList.isEmpty()) && !(tokenList.get(0).getTokenName().equals(";"))) {
                 oneLine.add(tokenList.remove(0));
             }
+            if ( tokenList.isEmpty() || !tokenList.get(0).getTokenName().equals(";")){
+                System.out.println("Syntax Error: Missing ; ," + "\"" +line + "\" (" +fileName + ":" + lineNo +")");
+                System.exit(-1);
+            }
             oneLine.add(tokenList.remove(0));       //; check
+
             List<String[]> treeBranch = checkedGrammar("stmt", oneLine);
             Node statement = new Node("stmt", branchStart);
             branchStart.addChild(statement);
@@ -51,7 +55,6 @@ public class JottParser {
         }
 
         branchStart.addChild(new Node("", branchStart));
-
         root.addChild(new Node("$$", root));
         return root;
     }
@@ -94,6 +97,7 @@ public class JottParser {
         }
         else{
             //check if the ID already exists??????????
+
             if(newChild.getData().equals("id")){
                 Token idToken = oneLine.remove(0);
                 String idString = idToken.getTokenName();
@@ -129,6 +133,10 @@ public class JottParser {
                     //symbol Table stuff
                     if (newChild.getParent().getData().equals("asmt")){
                         Token dataType = (Token)newChild.getParent().getChild(0).getData();
+                        if (symbolTable.containsKey(idToken.getTokenName())){
+                            System.out.println("The id has already been defined; cannot define it again., " + "\"" + idToken.getLine() +"\" (" + idToken.getFileName()+ ":" + idToken.getLineNo() + ")");
+                            System.exit(-1);
+                        }
                         symbolTable.put(idToken.getTokenName(), dataType.getTokenName());
                     }
                 }
@@ -295,7 +303,7 @@ public class JottParser {
             if (signs.contains(tokenList.get(0).getTokenName())){
                 Token sign = tokenList.remove(0);
                 Token integer = tokenList.remove(0);
-                Token signedInt = new Token(sign.getTokenName()+integer.getTokenName(), integer.getLineNo());
+                Token signedInt = new Token(sign.getTokenName()+integer.getTokenName(), integer.getLineNo(), integer.getFileName(), integer.getLine());
                 Node newInt = new Node("int", parent);
                 parent.addChild(newInt);
                 Node number = new Node(signedInt, newInt);
@@ -347,7 +355,7 @@ public class JottParser {
             if (signs.contains(tokenList.get(0).getTokenName())){
                 Token sign = tokenList.remove(0);
                 Token dbl = tokenList.remove(0);
-                Token signedDbl = new Token(sign.getTokenName()+dbl.getTokenName(), dbl.getLineNo());
+                Token signedDbl = new Token(sign.getTokenName()+dbl.getTokenName(), dbl.getLineNo(), dbl.getFileName(), dbl.getLine());
                 Node newDbl = new Node("dbl", parent);
                 parent.addChild(newDbl);
                 Node number = new Node(signedDbl, newDbl);
