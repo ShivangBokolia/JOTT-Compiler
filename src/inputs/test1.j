@@ -1,1 +1,1 @@
-charAt ("hello", 1 ;
+charAt ("hello", 1) ;

@@ -12,8 +12,9 @@ import java.util.Map;
 public class Jott {
 
     public static void main(String [] args){
-        if (args.length < 3){
-            System.out.println("Usage: java Jott " + args[2]);
+//        System.out.println(args[0]);
+        if (args.length != 3){
+            System.out.println("Usage: java Jott filename");
             System.exit(-1);
         }
         JottScanner jottScanner = new JottScanner(args[2]);
