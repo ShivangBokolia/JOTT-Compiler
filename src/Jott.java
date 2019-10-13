@@ -12,21 +12,25 @@ import java.util.Map;
 public class Jott {
 
     public static void main(String [] args){
-//        System.out.println(args[0]);
-        if (args.length != 1){
-            System.out.println("Usage: java Jott filename");
+        try {
+            if (args.length != 1) {
+                System.out.println("Usage: java Jott filename");
+                System.exit(-1);
+            }
+            JottScanner jottScanner = new JottScanner(args[0]);
+            List<Token> result = jottScanner.scanFile();
+            JottGrammar.buildGrammar();
+            JottParser parser = new JottParser();
+            Node root = parser.parseTake2(result);
+            Node decoratedTreeRoot = new Node("program", null);
+            JottDecorator decoratoredTree = new JottDecorator();
+            decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
+
+            JottRunner runner = new JottRunner();
+            runner.runCode(decoratedTreeRoot);
+        }catch(IndexOutOfBoundsException e){
+            System.out.println("Invalid Syntax");
             System.exit(-1);
         }
-        JottScanner jottScanner = new JottScanner(args[0]);
-        List<Token> result = jottScanner.scanFile();
-        JottGrammar.buildGrammar();
-        JottParser parser = new JottParser();
-        Node root = parser.parseTake2(result);
-        Node decoratedTreeRoot = new Node("program", null);
-        JottDecorator decoratoredTree = new JottDecorator();
-        decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
-
-        JottRunner runner = new JottRunner();
-        runner.runCode(decoratedTreeRoot);
     }
 }
