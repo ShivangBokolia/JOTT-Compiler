@@ -1,1 +1,1 @@
-charAt ("hello", 1) ;
+print(charAt ("hello", 1) );
