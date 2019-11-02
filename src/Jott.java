@@ -17,11 +17,16 @@ public class Jott {
                 System.out.println("Usage: java Jott filename");
                 System.exit(-1);
             }
+
             JottScanner jottScanner = new JottScanner(args[0]);
             List<Token> result = jottScanner.scanFile();
+//            for (Token r: result){
+//                System.out.println(r);
+//            }
             JottGrammar.buildGrammar();
             JottParser parser = new JottParser();
             Node root = parser.parseTake2(result);
+            root.inorderPrint();
             Node decoratedTreeRoot = new Node("program", null);
             JottDecorator decoratoredTree = new JottDecorator();
             decoratoredTree.decorateParseTree(root, decoratedTreeRoot);

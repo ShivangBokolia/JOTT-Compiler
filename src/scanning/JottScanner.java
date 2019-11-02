@@ -25,12 +25,28 @@ public class JottScanner {
                     if (line.charAt(i) ==  ' '){
                         continue;
                     }
+
                     //adding the tokens to the queue
                     if (line.charAt(i) == '+' || line.charAt(i) == '-' ||
                             line.charAt(i) == '*' || line.charAt(i) == '^' || line.charAt(i) == ',' ||
                             line.charAt(i) == '(' || line.charAt(i) == ')' || line.charAt(i) == ';' ||
-                            line.charAt(i) == '=') {
+                            line.charAt(i) == '{' || line.charAt(i) == '}') {
                         tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo, fileName, line));
+                    }
+                    //taking care of the relational operators
+                    else if (line.charAt(i) == '=' || line.charAt(i) == '<' || line.charAt(i) == '>' || line.charAt(i) == '!'){
+                        if (i+1 < line.length() && line.charAt(i+1) == '='){
+                            tokenQueue.add(new Token(Character.toString(line.charAt(i))
+                                    + Character.toString(line.charAt(i+1)), lineNo, fileName, line));
+                            i = i + 1;
+                        }
+                        else if (line.charAt(i) != '!'){
+                            tokenQueue.add(new Token(Character.toString(line.charAt(i)), lineNo, fileName, line));
+                        }
+                        else{
+                            System.out.println("Syntax Error: Invalid operator" + "\"" +line+ "\" (" + " " + fileName+ ":" + lineNo + ")");
+                        }
+
                     }
                     //detecting the comments
                     else if (line.charAt(i) == '/'){
@@ -73,7 +89,9 @@ public class JottScanner {
                                     if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
-                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' '){
+                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || line.charAt(i+1) == '{' ||
+                                            line.charAt(i+1) == '}' || line.charAt(i+1) == '<' || line.charAt(i+1) == '>' ||
+                                            line.charAt(i+1) == '!'){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
                                         tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
@@ -90,7 +108,9 @@ public class JottScanner {
                                     if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
-                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
+                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || line.charAt(i+1) == '{' ||
+                                            line.charAt(i+1) == '}' || line.charAt(i+1) == '<' || line.charAt(i+1) == '>' ||
+                                            line.charAt(i+1) == '!' || Character.isLetter(line.charAt(i+1))){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
                                         tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
@@ -103,12 +123,13 @@ public class JottScanner {
                             }
                             //checking for the token that begins with a '.'
                             else if (line.charAt(i) == '.'){
-                                //combination for while and if possible
                                 while(i + 1 < line.length()){
                                     if (line.charAt(i+1) == '+' || line.charAt(i+1) == '-' || line.charAt(i+1) == '/' ||
                                             line.charAt(i+1) == '*' || line.charAt(i+1) == '^' || line.charAt(i+1) == ',' ||
                                             line.charAt(i+1) == '(' || line.charAt(i+1) == ')' || line.charAt(i+1) == ';' ||
-                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || Character.isLetter(line.charAt(i+1))){
+                                            line.charAt(i+1) == '=' || line.charAt(i+1) == ' ' || line.charAt(i+1) == '{' ||
+                                            line.charAt(i+1) == '}' || line.charAt(i+1) == '<' || line.charAt(i+1) == '>' ||
+                                            line.charAt(i+1) == '!' || Character.isLetter(line.charAt(i+1))){
                                         tokenChar = tokenChar.concat(Character.toString(line.charAt(i)));
                                         tokenQueue.add(new Token(tokenChar, lineNo, fileName, line));
                                         break;
