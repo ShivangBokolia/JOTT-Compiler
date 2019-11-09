@@ -16,7 +16,12 @@ public class JottDecorator {
             valueNode.addChild(terminal);
         }
         if (iExpr.getChildren().size() > 1){
-            Node op = new Node(iExpr.getChild(1).getChild(0).getData(), valueNode);
+            Node op;
+            if (iExpr.getChild(1).getChild(0).getData().equals("rel_op")){
+                op = new Node(iExpr.getChild(1).getChild(0).getChild(0).getData(), valueNode);
+            }else{
+                op = new Node(iExpr.getChild(1).getChild(0).getData(), valueNode);
+            }
             valueNode.addChild(op);
             getIValues(valueNode, iExpr.getChild(2));
         }
@@ -31,7 +36,12 @@ public class JottDecorator {
             valueNode.addChild(terminal);
         }
         if (dExpr.getChildren().size() > 1){
-            Node op = new Node(dExpr.getChild(1).getChild(0).getData(), valueNode);
+            Node op;
+            if (dExpr.getChild(1).getChild(0).getData().equals("rel_op")){
+                op = new Node(dExpr.getChild(1).getChild(0).getChild(0).getData(), valueNode);
+            } else {
+                op = new Node(dExpr.getChild(1).getChild(0).getData(), valueNode);
+            }
             valueNode.addChild(op);
             getDValues(valueNode, dExpr.getChild(2));
         }
