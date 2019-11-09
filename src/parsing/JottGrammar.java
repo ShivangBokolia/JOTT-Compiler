@@ -35,12 +35,12 @@ public class JottGrammar {
         grammar.put("i_exp", new String[][]{{"i_expr", "rel_op", "i_expr"}, {"s_expr", "rel_op", "s_expr"}, {"d_expr", "rel_op", "d_expr"}});
         grammar.put("str_literal", new String[][]{{"\"str\""}});
         grammar.put("str", new String[][]{{"char", "str"}, {"space", "str"}, {""}});
-        grammar.put("s_expr", new String[][]{{"str_literal"}, {"id"}, {"concat", "start_paren", "s_expr", ",", "s_expr", "end_paren"}, {"charAt", "start_paren", "s_expr", ",", "i_expr", "end_paren"}});
-//        grammar.put("char*", new String[][]{{"char", "char*"}, {""}});
-//        grammar.put("digit*", new String[][]{{"digit", "digit*"}, {""}});
+        grammar.put("s_expr", new String[][]{{"str_literal"}, {"id"}, {"concat", "start_paren", "s_expr", ",", "s_expr", "end_paren"}, {"charAt", "start_paren", "s_expr", ",", "i_expr", "end_paren"}, {"s_expr", "op", "s_expr"}});
         grammar.put("rel_op", new String[][]{{">"}, {"<"}, {">="}, {"<="}, {"=="}, {"!="}});
         grammar.put("b_stmt_list", new String[][]{{"b_stmt", "b_stmt_list"}, {""}});
-        grammar.put("b_stmt", new String[][]{{"r_asmt", "end_statement"}, {"print_stmt"}, {"expr", "end_statement"}});
+        grammar.put("b_stmt", new String[][]{{"r_asmt", "end_statement"}, {"print_stmt"}, {"if", "(", "expr", ")", "{", "b_stmt_list", "}"},
+                {"if", "(", "expr", ")", "{", "b_stmt_list", "}", "else", "{", "b_stmt_list", "}"}, {"while", "(", "i_expr", ")", "{", "b_stmt_list", "}"},
+                {"for", "(", "asmt", "i_expr", ";", "r_asmt", ")", "{", "b_stmt_list", "}"}, {"expr", "end_statement"}});
         grammar.put("r_asmt", new String[][]{{"id", "=", "expr"}});
     }
 }
