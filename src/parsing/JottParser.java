@@ -77,7 +77,10 @@ public class JottParser {
                 for (String grammar : treeBranch.get(j)) {
                     Node newChild = new Node(grammar, next);
                     next.addChild(newChild);
-                    expandNode(newChild, oneLine);
+                    expandNode(newChild, oneLine, isFor);
+                    if (oneLine.isEmpty()){
+                        break;
+                    }
                 }
                 next = next.getChild(0);
             }
@@ -125,7 +128,7 @@ public class JottParser {
         return null;
     }
 
-    private void expandNode (Node newChild, List<Token> oneLine) {
+    private void expandNode (Node newChild, List<Token> oneLine, boolean isFor) {
         if (!(JottGrammar.grammar.containsKey(newChild.getData()))){
             if (newChild.getData().equals(oneLine.get(0).getTokenName())){
                 newChild.setData(oneLine.get(0));
@@ -183,12 +186,12 @@ public class JottParser {
             else if (newChild.getData().equals("r_asmt")){
                 Node id = new Node("id", newChild);
                 newChild.addChild(id);
-                expandNode(id, oneLine);
+                expandNode(id, oneLine, isFor);
                 Node equal = new Node(oneLine.remove(0), newChild);
                 newChild.addChild(equal);
                 Node expr = new Node("expr", newChild);
                 newChild.addChild(expr);
-                expandNode(expr, oneLine);
+                expandNode(expr, oneLine, isFor);
             }
             else if (newChild.getData().equals("expr")){
                 Expr(newChild, oneLine);
@@ -200,22 +203,35 @@ public class JottParser {
                 } else {
                     Node startBstmt = new Node("b_stmt", newChild);
                     newChild.addChild(startBstmt);
-                    expandNode(startBstmt, oneLine);
+                    expandNode(startBstmt, oneLine, isFor);
                     Node bStmtList = new Node("b_stmt_list", newChild);
                     newChild.addChild(bStmtList);
-                    expandNode(bStmtList, oneLine);
+                    expandNode(bStmtList, oneLine, isFor);
                 }
             }
             else if (newChild.getData().equals("b_stmt")){
                 List<String[]> chosenGrammar = checkedGrammar("b_stmt", oneLine);
                 Node next = newChild;
+                boolean loop = oneLine.get(0).getTokenName().equals("for");
                 for (int i = chosenGrammar.size() - 1; i >= 0; i--){
                     for (String grammar: chosenGrammar.get(i)){
                         Node newestChild = new Node(grammar, next);
                         next.addChild(newestChild);
-                        expandNode(newestChild, oneLine);
+                        expandNode(newestChild, oneLine, loop);
+                        if (oneLine.isEmpty() || (!oneLine.get(0).getTokenName().equals("else") && grammar.equals("}"))){
+                            break;
+                        }
                     }
                     next = next.getChild(0);
+                }
+
+            }
+            else if (newChild.getData().equals("asmt") && isFor){
+                List<String[]> forStatement = checkedGrammar("asmt", oneLine);
+                for (String grammar : forStatement.get(0)) {
+                    Node newerChild = new Node(grammar, newChild);
+                    newChild.addChild(newerChild);
+                    expandNode(newerChild, oneLine, isFor);
                 }
             }
             else if (newChild.getData().equals("i_expr")){
@@ -446,7 +462,7 @@ public class JottParser {
             for (String grammar: grammars){
                 Node newParent = new Node(grammar, parent);
                 parent.addChild(newParent);
-                expandNode(newParent, tokenList);
+                expandNode(newParent, tokenList, false);
             }
         }
         else{

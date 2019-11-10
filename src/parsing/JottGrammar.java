@@ -21,9 +21,10 @@ public class JottGrammar {
         grammar.put("digit", new String[][]{{"0"}, {"1"}, {"2"}, {"3"}, {"4"}, {"5"}, {"6"}, {"7"}, {"8"}, {"9"}});
         grammar.put("sign", new String[][]{{"-"}, {"+"}, {""}});
         grammar.put("id", new String[][]{{"l_char", "char*"}});
-        grammar.put("stmt", new String[][]{{"print_stmt"}, {"asmt"}, {"if", "(", "expr", ")", "{", "b_stmt_list", "}"},
-                {"if", "(", "expr", ")", "{", "b_stmt_list", "}", "else", "{", "b_stmt_list", "}"}, {"while", "(", "i_expr", ")", "{", "b_stmt_list", "}"},
-                {"for", "(", "asmt", "i_expr", ";", "r_asmt", ")", "{", "b_stmt_list", "}"}, {"r_asmt", "end_statement"}, {"expr", "end_statement"}});
+        grammar.put("stmt", new String[][]{{"print_stmt"}, {"asmt"},{"if", "start_paren", "expr", "end_paren", "{", "b_stmt_list", "}", "else", "{", "b_stmt_list", "}"},
+                {"if", "(", "expr", ")", "{", "b_stmt_list", "}"},
+                {"while", "start_paren", "i_expr", "end_paren", "{", "b_stmt_list", "}"},
+                {"for", "start_paren", "asmt", "i_expr", ";", "r_asmt", "end_paren", "{", "b_stmt_list", "}"}, {"r_asmt", "end_statement"}, {"expr", "end_statement"}});
         grammar.put("expr", new String[][]{{"i_expr"}, {"d_expr"}, {"s_expr"}, {"id"}});
         grammar.put("print_stmt", new String[][]{{"print", "start_paren", "expr", "end_paren", "end_statement"}});
         grammar.put("asmt", new String[][]{{"Double", "id", "=", "d_expr", "end_statement"}, {"Integer", "id", "=", "i_expr", "end_statement"}, {"String", "id", "=", "s_expr", "end_statement"}});
@@ -38,9 +39,10 @@ public class JottGrammar {
         grammar.put("s_expr", new String[][]{{"str_literal"}, {"id"}, {"concat", "start_paren", "s_expr", ",", "s_expr", "end_paren"}, {"charAt", "start_paren", "s_expr", ",", "i_expr", "end_paren"}, {"s_expr", "op", "s_expr"}});
         grammar.put("rel_op", new String[][]{{">"}, {"<"}, {">="}, {"<="}, {"=="}, {"!="}});
         grammar.put("b_stmt_list", new String[][]{{"b_stmt", "b_stmt_list"}, {""}});
-        grammar.put("b_stmt", new String[][]{{"r_asmt", "end_statement"}, {"print_stmt"}, {"if", "(", "expr", ")", "{", "b_stmt_list", "}"},
-                {"if", "(", "expr", ")", "{", "b_stmt_list", "}", "else", "{", "b_stmt_list", "}"}, {"while", "(", "i_expr", ")", "{", "b_stmt_list", "}"},
-                {"for", "(", "asmt", "i_expr", ";", "r_asmt", ")", "{", "b_stmt_list", "}"}, {"expr", "end_statement"}});
+        grammar.put("b_stmt", new String[][]{{"r_asmt", "end_statement"}, {"print_stmt"}, {"if", "start_paren", "expr", "end_paren", "{", "b_stmt_list", "}", "else", "{", "b_stmt_list", "}"},
+                {"if", "(", "expr", ")", "{", "b_stmt_list", "}"},
+                {"while", "start_paren", "i_expr", "end_paren", "{", "b_stmt_list", "}"},
+                {"for", "start_paren", "asmt", "i_expr", ";", "r_asmt", "end_paren", "{", "b_stmt_list", "}"}, {"expr", "end_statement"}});
         grammar.put("r_asmt", new String[][]{{"id", "=", "expr"}});
     }
 }
