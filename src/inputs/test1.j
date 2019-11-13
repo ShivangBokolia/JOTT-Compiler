@@ -1,3 +1,1 @@
-Integer i = 1;
-i = -3 - -i;
-print(i);
+for( Integer x = 5; x > 0; x = x - 1 ) { print( x ); }

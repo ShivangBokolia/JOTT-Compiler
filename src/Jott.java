@@ -29,7 +29,7 @@ public class Jott {
 //            root.inorderPrint();
             Node decoratedTreeRoot = new Node("program", null);
             JottDecorator decoratoredTree = new JottDecorator();
-            decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
+            decoratoredTree.decorateParseTree(root.getChild(0), decoratedTreeRoot);
 
             JottRunner runner = new JottRunner();
             runner.runCode(decoratedTreeRoot);

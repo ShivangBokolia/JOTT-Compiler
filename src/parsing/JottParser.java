@@ -194,17 +194,14 @@ public class JottParser {
                 newChild.addChild(expr);
                 expandNode(expr, oneLine, isFor);
                 if ((symbolTable.get(id_Token.getTokenName()).equals("Integer") && !expr.getChild(0).getData().equals("i_expr"))){
-                    System.out.println(expr.getChild(0).getData());
                     System.out.println("Syntax Error: Type Mismatch: Expected Integer, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
                     System.exit(-1);
                 }
                 else if ((symbolTable.get(id_Token.getTokenName()).equals("Double") && !expr.getChild(0).getData().equals("d_expr"))){
-                    System.out.println(expr.getChild(0).getData());
                     System.out.println("Syntax Error: Type Mismatch: Expected Double, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
                     System.exit(-1);
                 }
                 else if ((symbolTable.get(id_Token.getTokenName()).equals("String") && !expr.getChild(0).getData().equals("s_expr"))){
-                    System.out.println(expr.getChild(0).getData());
                     System.out.println("Syntax Error: Type Mismatch: Expected String, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
                     System.exit(-1);
                 }
