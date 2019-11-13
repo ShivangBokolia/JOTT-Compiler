@@ -113,17 +113,17 @@ public class JottRunner {
     public void runCode (Node decoratedTreeRoot){
         List<Node> statements = decoratedTreeRoot.getChildren();
         for (Node statement: statements){
-            if (statement.getData().equals("i_decl")){
+            if (statement.getData().equals("i_decl") || statement.getData().equals("i_asgn")){
                 int idValue = evaluateInteger(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));
             }
-            else if (statement.getData().equals("d_decl")){
+            else if (statement.getData().equals("d_decl") || statement.getData().equals("d_asgn")){
                 double idValue = evaluateDouble(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));
             }
-            else if (statement.getData().equals("s_decl")){
+            else if (statement.getData().equals("s_decl") || statement.getData().equals("s_asgn")){
                 String idValue = evaluateString(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));

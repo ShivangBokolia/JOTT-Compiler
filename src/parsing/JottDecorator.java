@@ -109,6 +109,36 @@ public class JottDecorator {
                 getSValues(value, parseTreeParent.getChild(3));
             }
         }
+        else if (parseTreeParent.getData().equals("r_asmt")){
+            Token idToken = (Token)parseTreeParent.getChild(0).getChild(0).getData();
+            String idType = JottParser.symbolTable.get(idToken.getTokenName());
+            Node asgn;
+            if (idType.equals("Integer")){
+                asgn = new Node("i_asgn", decorateParseTreeRoot);
+                decorateParseTreeRoot.addChild(asgn);
+            }
+            else if (idType.equals("Double")){
+                asgn = new Node("d_asgn", decorateParseTreeRoot);
+                decorateParseTreeRoot.addChild(asgn);
+            }
+            else{
+                asgn = new Node("s_asgn", decorateParseTreeRoot);
+                decorateParseTreeRoot.addChild(asgn);
+            }
+            Node idNode = new Node(idToken, asgn);
+            asgn.addChild(idNode);
+            Node value = new Node("value", asgn);
+            asgn.addChild(value);
+            if (idType.equals("Integer")){
+                getIValues(value, parseTreeParent.getChild(2).getChild(0));
+            }
+            else if (idType.equals("Double")){
+                getDValues(value, parseTreeParent.getChild(2).getChild(0));
+            }
+            else {
+                getSValues(value, parseTreeParent.getChild(2).getChild(0));
+            }
+        }
         else if (parseTreeParent.getData().equals("print_stmt")){
             Node printExpres = new Node("print_expres", decorateParseTreeRoot);
             decorateParseTreeRoot.addChild(printExpres);
@@ -161,6 +191,7 @@ public class JottDecorator {
                 getSValues(value, parseTreeParent.getChild(0));
             }
         }
+
         List<Node> children = parseTreeParent.getChildren();
         for (Node child: children){
             decorateParseTree(child, decorateParseTreeRoot);

@@ -26,7 +26,7 @@ public class Jott {
             JottGrammar.buildGrammar();
             JottParser parser = new JottParser();
             Node root = parser.parseTake2(result);
-            root.inorderPrint();
+//            root.inorderPrint();
             Node decoratedTreeRoot = new Node("program", null);
             JottDecorator decoratoredTree = new JottDecorator();
             decoratoredTree.decorateParseTree(root, decoratedTreeRoot);
