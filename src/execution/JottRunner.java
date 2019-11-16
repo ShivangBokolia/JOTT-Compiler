@@ -11,14 +11,16 @@ public class JottRunner {
 
     private static Map<String, String> valueTable = new HashMap<>();
 
+    //The changes made to the evaluate integer need to be done to double and String in future.
+
     private int evaluateInteger (Node valueNode){
         int accum = 0;
         if (valueTable.containsKey(((Token)valueNode.getChild(0).getData()).getTokenName())){
             int idValue = Integer.parseInt(valueTable.get(((Token)valueNode.getChild(0).getData()).getTokenName()));
             accum += idValue;
         }
-        else{
-            accum += Integer.parseInt(((Token)valueNode.getChild(0).getData()).getTokenName());
+        else {
+            accum += Integer.parseInt(((Token) valueNode.getChild(0).getData()).getTokenName());
         }
         List<Node> values = valueNode.getChildren();
         for (int i=1; i<values.size(); i+=2){
@@ -43,6 +45,12 @@ public class JottRunner {
                 accum /= operand;
             }else if (op.equals("^")){
                 accum = (int)Math.pow(accum, operand);
+            }else if ((op.equals(">") && (accum > operand)) || (op.equals(">=") && (accum >= operand)) ||
+                        (op.equals("<") && (accum < operand)) || (op.equals("<=") && (accum <= operand)) ||
+                        (op.equals("==") && (accum == operand)) || (op.equals("!=") && (accum != operand))){
+                accum = 1;
+            }else {
+                accum = 0;
             }
         }
         return accum;
@@ -113,17 +121,17 @@ public class JottRunner {
     public void runCode (Node decoratedTreeRoot){
         List<Node> statements = decoratedTreeRoot.getChildren();
         for (Node statement: statements){
-            if (statement.getData().equals("i_decl")){
+            if (statement.getData().equals("i_decl") || statement.getData().equals("i_asgn")){
                 int idValue = evaluateInteger(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));
             }
-            else if (statement.getData().equals("d_decl")){
+            else if (statement.getData().equals("d_decl") || statement.getData().equals("d_asgn")){
                 double idValue = evaluateDouble(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));
             }
-            else if (statement.getData().equals("s_decl")){
+            else if (statement.getData().equals("s_decl") || statement.getData().equals("s_asgn")){
                 String idValue = evaluateString(statement.getChild(1));
                 String id = ((Token)statement.getChild(0).getData()).getTokenName();
                 valueTable.put(id, String.valueOf(idValue));
@@ -151,6 +159,49 @@ public class JottRunner {
                 else if (exprsType.equals("s_expres")){
                     System.out.println(evaluateString(statement.getChild(0).getChild(0)));
                 }
+            }
+            else if (statement.getData().equals("if_decl")){
+                if (statement.getChild(0).getChild(0).getData().equals("i_expres")){
+                    int isTrue = evaluateInteger(statement.getChild(0).getChild(0).getChild(0));
+                    if (isTrue == 1){
+                        runCode(statement.getChild(1));
+                    }
+                }
+            }
+            else if (statement.getData().equals("if_else")){
+                if (statement.getChild(0).getChild(0).getChild(0).getData().equals("i_expres")){
+                    int isTrue = evaluateInteger(statement.getChild(0).getChild(0).getChild(0).getChild(0));
+//                    System.out.println(statement.getChild(0).getChild(1));
+//                    System.out.println(statement.getChild(1).getChild(0));
+                    if (isTrue == 1){
+                        runCode(statement.getChild(0).getChild(1));
+                    } else if (isTrue == 0){
+                        runCode(statement.getChild(1).getChild(0));
+                    }
+                }
+            }
+            else if (statement.getData().equals("while_decl")){
+                int loop_cond = evaluateInteger(statement.getChild(0).getChild(0).getChild(0));
+                while (loop_cond != 0){
+                    runCode(statement.getChild(1));
+                    loop_cond = evaluateInteger(statement.getChild(0).getChild(0).getChild(0));
+                }
+            }
+            else if (statement.getData().equals("for_decl")){
+                int idValue = evaluateInteger(statement.getChild(0).getChild(0).getChild(1));
+                String id = ((Token)statement.getChild(0).getChild(0).getChild(0).getData()).getTokenName();
+                valueTable.put(id, String.valueOf(idValue));
+
+                //loop condition
+                int loop_cond = evaluateInteger(statement.getChild(1).getChild(0).getChild(0));
+                while (loop_cond != 0){
+                    runCode(statement.getChild(3));
+                    idValue = evaluateInteger(statement.getChild(2).getChild(1));
+                    id = ((Token)statement.getChild(2).getChild(0).getData()).getTokenName();
+                    valueTable.put(id, String.valueOf(idValue));
+                    loop_cond = evaluateInteger(statement.getChild(1).getChild(0).getChild(0));
+                }
+
             }
         }
     }
