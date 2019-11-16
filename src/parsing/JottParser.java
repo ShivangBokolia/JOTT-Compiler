@@ -9,6 +9,7 @@ public class JottParser {
     public static Map<String, String> symbolTable = new HashMap<>();
 
     private ArrayList<String> ops = new ArrayList<>(Arrays.asList("+", "-", "*", "/", "^"));
+    private ArrayList<String> relOps = new ArrayList<>(Arrays.asList(">", "<", "<=", ">=", "==", "!="));
     private ArrayList<String> lowerCase = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private ArrayList<String> digits = new ArrayList<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"));
     private ArrayList<String> signs = new ArrayList<>(Arrays.asList("+", "-", ""));
@@ -26,16 +27,48 @@ public class JottParser {
             String line = tokenList.get(0).getLine();
             int lineNo = tokenList.get(0).getLineNo();
             String fileName = tokenList.get(0).getFileName();
-            while (!(tokenList.isEmpty()) && !(tokenList.get(0).getTokenName().equals(";"))) {
+//            while (!(tokenList.isEmpty()) && !(tokenList.get(0).getTokenName().equals(";"))) {
+//                oneLine.add(tokenList.remove(0));
+//            }
+//            if ( tokenList.isEmpty() || !tokenList.get(0).getTokenName().equals(";")){
+//                System.out.println("Syntax Error: Missing ; ," + "\"" +line + "\" (" +fileName + ":" + lineNo +")");
+//                System.exit(-1);
+//            }
+//            oneLine.add(tokenList.remove(0));       //; check
+
+            //New condition for checking for semicolon and {}
+            int openParensCount = 0, closeParensCount = 0;
+            boolean isFor = tokenList.get(0).getTokenName().equals("for");
+
+            while(!(tokenList.isEmpty())){
+                if ((openParensCount == closeParensCount) && (openParensCount > 0) && (closeParensCount > 0)){
+                    if (tokenList.get(0).getTokenName().equals("else")){
+                        openParensCount = 0;
+                        closeParensCount = 0;
+                    }else{
+                        break;
+                    }
+                }
+                else if (tokenList.get(0).getTokenName().equals(";") && (openParensCount == closeParensCount) && !isFor){
+                    oneLine.add(tokenList.remove(0));
+                    break;
+                }
+                else if (tokenList.get(0).getTokenName().equals("{")){
+                    openParensCount++;
+                }
+                else if (tokenList.get(0).getTokenName().equals("}")){
+                    closeParensCount++;
+                }
                 oneLine.add(tokenList.remove(0));
             }
-            if ( tokenList.isEmpty() || !tokenList.get(0).getTokenName().equals(";")){
-                System.out.println("Syntax Error: Missing ; ," + "\"" +line + "\" (" +fileName + ":" + lineNo +")");
-                System.exit(-1);
-            }
-            oneLine.add(tokenList.remove(0));       //; check
+
 
             List<String[]> treeBranch = checkedGrammar("stmt", oneLine);
+//            for (String[] tree: treeBranch){
+//                System.out.println("_________________");
+//                for (String t: tree)
+//                    System.out.println(t);
+//            }
             Node statement = new Node("stmt", branchStart);
             branchStart.addChild(statement);
             Node next = statement;
@@ -44,7 +77,10 @@ public class JottParser {
                 for (String grammar : treeBranch.get(j)) {
                     Node newChild = new Node(grammar, next);
                     next.addChild(newChild);
-                    expandNode(newChild, oneLine);
+                    expandNode(newChild, oneLine, isFor);
+                    if (oneLine.isEmpty()){
+                        break;
+                    }
                 }
                 next = next.getChild(0);
             }
@@ -71,6 +107,10 @@ public class JottParser {
                 else{
                     continue;
                 }
+            }else if (grammarOpt[0].equals("r_asmt") && symbolTable.containsKey(oneLine.get(0).getTokenName())){
+                List<String[]> leaf = new ArrayList<>();
+                leaf.add(grammarOpt);
+                return leaf;
             }
             else if (grammarOpt[0].equals("expr")){
                 List<String[]> leaf = new ArrayList<>();
@@ -88,7 +128,7 @@ public class JottParser {
         return null;
     }
 
-    private void expandNode (Node newChild, List<Token> oneLine) {
+    private void expandNode (Node newChild, List<Token> oneLine, boolean isFor) {
         if (!(JottGrammar.grammar.containsKey(newChild.getData()))){
             if (newChild.getData().equals(oneLine.get(0).getTokenName())){
                 newChild.setData(oneLine.get(0));
@@ -143,8 +183,69 @@ public class JottParser {
                     System.exit(-1);
                 }
             }
+            else if (newChild.getData().equals("r_asmt")){
+                Node id = new Node("id", newChild);
+                newChild.addChild(id);
+                Token id_Token = oneLine.get(0);
+                expandNode(id, oneLine, isFor);
+                Node equal = new Node(oneLine.remove(0), newChild);
+                newChild.addChild(equal);
+                Node expr = new Node("expr", newChild);
+                newChild.addChild(expr);
+                expandNode(expr, oneLine, isFor);
+                if ((symbolTable.get(id_Token.getTokenName()).equals("Integer") && !expr.getChild(0).getData().equals("i_expr"))){
+                    System.out.println("Syntax Error: Type Mismatch: Expected Integer, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
+                    System.exit(-1);
+                }
+                else if ((symbolTable.get(id_Token.getTokenName()).equals("Double") && !expr.getChild(0).getData().equals("d_expr"))){
+                    System.out.println("Syntax Error: Type Mismatch: Expected Double, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
+                    System.exit(-1);
+                }
+                else if ((symbolTable.get(id_Token.getTokenName()).equals("String") && !expr.getChild(0).getData().equals("s_expr"))){
+                    System.out.println("Syntax Error: Type Mismatch: Expected String, "+ "\"" + id_Token.getLine() +"\" (" + id_Token.getFileName() +":" + id_Token.getLineNo() +")");
+                    System.exit(-1);
+                }
+            }
             else if (newChild.getData().equals("expr")){
                 Expr(newChild, oneLine);
+            }
+            else if (newChild.getData().equals("b_stmt_list")){
+                if (oneLine.get(0).getTokenName().equals("}")){
+                    Node endBstmt = new Node("", newChild);
+                    newChild.addChild(endBstmt);
+                } else {
+                    Node startBstmt = new Node("b_stmt", newChild);
+                    newChild.addChild(startBstmt);
+                    expandNode(startBstmt, oneLine, isFor);
+                    Node bStmtList = new Node("b_stmt_list", newChild);
+                    newChild.addChild(bStmtList);
+                    expandNode(bStmtList, oneLine, isFor);
+                }
+            }
+            else if (newChild.getData().equals("b_stmt")){
+                List<String[]> chosenGrammar = checkedGrammar("b_stmt", oneLine);
+                Node next = newChild;
+                boolean loop = oneLine.get(0).getTokenName().equals("for");
+                for (int i = chosenGrammar.size() - 1; i >= 0; i--){
+                    for (String grammar: chosenGrammar.get(i)){
+                        Node newestChild = new Node(grammar, next);
+                        next.addChild(newestChild);
+                        expandNode(newestChild, oneLine, loop);
+                        if (oneLine.isEmpty() || (!oneLine.get(0).getTokenName().equals("else") && grammar.equals("}"))){
+                            break;
+                        }
+                    }
+                    next = next.getChild(0);
+                }
+
+            }
+            else if (newChild.getData().equals("asmt") && isFor){
+                List<String[]> forStatement = checkedGrammar("asmt", oneLine);
+                for (String grammar : forStatement.get(0)) {
+                    Node newerChild = new Node(grammar, newChild);
+                    newChild.addChild(newerChild);
+                    expandNode(newerChild, oneLine, isFor);
+                }
             }
             else if (newChild.getData().equals("i_expr")){
                 iExprParse(newChild, oneLine, true, false);
@@ -169,6 +270,7 @@ public class JottParser {
             }
         }
     }
+
 
     private boolean isInteger(String str){
         for (int i=0; i<str.length(); i++){
@@ -268,6 +370,17 @@ public class JottParser {
             parent.addChild(iExpr);
             iExprParse(iExpr, tokenList, false, true);
         }
+        else if (relOps.contains(tokenList.get(0).getTokenName()) && !isOp){
+            Node op = new Node("op", parent);
+            parent.addChild(op);
+            Node rel_op = new Node("rel_op", op);
+            op.addChild(rel_op);
+            Node opNode = new Node(tokenList.remove(0), rel_op);
+            rel_op.addChild(opNode);
+            Node iExpr = new Node("i_expr", parent);
+            parent.addChild(iExpr);
+            iExprParse(iExpr, tokenList, false, true);
+        }
         else{
             System.out.println("Invalid Operator/Sign, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
             System.exit(-1);
@@ -322,6 +435,17 @@ public class JottParser {
             parent.addChild(dExpr);
             dExprParse(dExpr, tokenList, false, true);
         }
+        else if (relOps.contains(tokenList.get(0).getTokenName()) && !isOp){
+            Node op = new Node("op", parent);
+            parent.addChild(op);
+            Node relOp = new Node("rel_op", op);
+            op.addChild(relOp);
+            Node opNode = new Node(tokenList.remove(0), relOp);
+            relOp.addChild(opNode);
+            Node dExpr = new Node("d_expr", parent);
+            parent.addChild(dExpr);
+            dExprParse(dExpr, tokenList, false, true);
+        }
         else{
             System.out.println("Invalid Operator/Sign, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
             System.exit(-1);
@@ -351,7 +475,7 @@ public class JottParser {
             for (String grammar: grammars){
                 Node newParent = new Node(grammar, parent);
                 parent.addChild(newParent);
-                expandNode(newParent, tokenList);
+                expandNode(newParent, tokenList, false);
             }
         }
         else{
