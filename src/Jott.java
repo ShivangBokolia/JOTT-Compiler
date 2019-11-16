@@ -12,7 +12,7 @@ import java.util.Map;
 public class Jott {
 
     public static void main(String [] args){
-//        try {
+        try {
             if (args.length != 1) {
                 System.out.println("Usage: java Jott filename");
                 System.exit(-1);
@@ -20,9 +20,6 @@ public class Jott {
 
             JottScanner jottScanner = new JottScanner(args[0]);
             List<Token> result = jottScanner.scanFile();
-//            for (Token r: result){
-//                System.out.println(r);
-//            }
             JottGrammar.buildGrammar();
             JottParser parser = new JottParser();
             Node root = parser.parseTake2(result);
@@ -33,9 +30,9 @@ public class Jott {
 
             JottRunner runner = new JottRunner();
             runner.runCode(decoratedTreeRoot);
-//        }catch(IndexOutOfBoundsException e){
-//            System.out.println("Invalid Syntax Here");
-//            System.exit(-1);
-//        }
+        }catch(IndexOutOfBoundsException e){
+            System.out.println("Invalid Syntax Here");
+            System.exit(-1);
+        }
     }
 }
