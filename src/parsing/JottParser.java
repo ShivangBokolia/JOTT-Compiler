@@ -7,12 +7,16 @@ import java.util.*;
 public class JottParser {
 
     public static Map<String, String> symbolTable = new HashMap<>();
+    public static Map<String, FunctionClass> funcList = new HashMap<>();
+
+    private String lastFuncCall;
 
     private ArrayList<String> ops = new ArrayList<>(Arrays.asList("+", "-", "*", "/", "^"));
     private ArrayList<String> relOps = new ArrayList<>(Arrays.asList(">", "<", "<=", ">=", "==", "!="));
     private ArrayList<String> lowerCase = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private ArrayList<String> digits = new ArrayList<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"));
     private ArrayList<String> signs = new ArrayList<>(Arrays.asList("+", "-", ""));
+    private ArrayList<String> types = new ArrayList<>(Arrays.asList("String", "Double", "Integer", "Void"));
 
     public Node parseTake2(List<Token> tokenList) {
 
@@ -39,8 +43,15 @@ public class JottParser {
             //New condition for checking for semicolon and {}
             int openParensCount = 0, closeParensCount = 0;
             boolean isFor = tokenList.get(0).getTokenName().equals("for");
-
+            boolean isFuncDecl = types.contains(tokenList.get(0).getTokenName());
+            boolean readId = false;
+            boolean isFunc = false;
             while(!(tokenList.isEmpty())){
+                if (isFuncDecl && readId && tokenList.get(0).getTokenName().equals("(")) {
+                    isFunc = true;
+                } else if (isFuncDecl && readId && tokenList.get(0).getTokenName().equals("=")){
+                    isFuncDecl = false;
+                }
                 if ((openParensCount == closeParensCount) && (openParensCount > 0) && (closeParensCount > 0)){
                     if (tokenList.get(0).getTokenName().equals("else")){
                         openParensCount = 0;
@@ -59,31 +70,41 @@ public class JottParser {
                 else if (tokenList.get(0).getTokenName().equals("}")){
                     closeParensCount++;
                 }
+                if (isFuncDecl) {
+                    readId = isId(tokenList.get(0).getTokenName());
+                }
                 oneLine.add(tokenList.remove(0));
             }
-
-
-            List<String[]> treeBranch = checkedGrammar("stmt", oneLine);
-//            for (String[] tree: treeBranch){
-//                System.out.println("_________________");
-//                for (String t: tree)
-//                    System.out.println(t);
-//            }
             Node statement = new Node("stmt", branchStart);
             branchStart.addChild(statement);
             Node next = statement;
 
-            for (int j = treeBranch.size() - 1; j >= 0; j--) {
-                for (String grammar : treeBranch.get(j)) {
-                    Node newChild = new Node(grammar, next);
-                    next.addChild(newChild);
-                    expandNode(newChild, oneLine, isFor);
-                    if (oneLine.isEmpty()){
-                        break;
+
+            if (isFunc){
+                FunctionClass func = new FunctionClass(oneLine);
+                funcList.put(func.getFunName(), func);
+                Node function = new Node(func, next);
+                next.addChild(function);
+            } else {
+                List<String[]> treeBranch = checkedGrammar("stmt", oneLine);
+//                for (String[] tree: treeBranch){
+//                    System.out.println("_________________");
+//                    for (String t: tree)
+//                        System.out.println(t);
+//                }
+                for (int j = treeBranch.size() - 1; j >= 0; j--) {
+                    for (String grammar : treeBranch.get(j)) {
+                        Node newChild = new Node(grammar, next);
+                        next.addChild(newChild);
+                        expandNode(newChild, oneLine, isFor);
+                        if (oneLine.isEmpty()){
+                            break;
+                        }
                     }
+                    next = next.getChild(0);
                 }
-                next = next.getChild(0);
             }
+
             lineCount++;
             Node newStart = new Node("stmt_list", branchStart);
             branchStart.addChild(newStart);
@@ -93,6 +114,42 @@ public class JottParser {
         branchStart.addChild(new Node("", branchStart));
         root.addChild(new Node("$$", root));
         return root;
+    }
+
+    private boolean isId(String tokenName){
+        String idString = tokenName;
+        List<String> chars = new ArrayList<>();
+        for (String[] l: JottGrammar.grammar.get("l_char")){
+            chars.add(l[0]);
+        }
+        boolean isFirstLower = false;
+        for (String c: chars){
+            if (idString.substring(0, 1).equals(c)){
+                isFirstLower = true;
+                break;
+            }
+        }
+        boolean isValidId = true;
+        if (isFirstLower) {
+            for (String[] u: JottGrammar.grammar.get("u_char")){
+                chars.add(u[0]);
+            }
+            for (String[] d: JottGrammar.grammar.get("digit")){
+                chars.add(d[0]);
+            }
+            for (int i = 1; i < idString.length(); i++) {
+                if (!chars.contains(idString.substring(i, i + 1))) {
+                    isValidId = false;
+                    break;
+                }
+            }
+        }
+        if (isFirstLower && isValidId){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     private List<String[]> checkedGrammar(String currGrammar, List<Token> oneLine){
@@ -107,7 +164,16 @@ public class JottParser {
                 else{
                     continue;
                 }
-            }else if (grammarOpt[0].equals("r_asmt") && symbolTable.containsKey(oneLine.get(0).getTokenName())){
+            }
+            else if (grammarOpt[0].equals("f_call") && funcList.containsKey(oneLine.get(0).getTokenName())){
+                List<String[]> leaf = new ArrayList<>();
+                leaf.add(grammarOpt);
+                return leaf;
+            }
+            else if (grammarOpt[0].equals("f_call") && isId(oneLine.get(0).getTokenName()) && oneLine.get(1).getTokenName().equals("=")){
+                continue;
+            }
+            else if (grammarOpt[0].equals("r_asmt") && symbolTable.containsKey(oneLine.get(0).getTokenName())){
                 List<String[]> leaf = new ArrayList<>();
                 leaf.add(grammarOpt);
                 return leaf;
@@ -208,6 +274,80 @@ public class JottParser {
             }
             else if (newChild.getData().equals("expr")){
                 Expr(newChild, oneLine);
+            }
+            else if (newChild.getData().equals("f_call")){
+                String[] gram;
+                if (funcList.containsKey(oneLine.get(0).getTokenName())){
+                    lastFuncCall = oneLine.get(0).getTokenName();
+                    FunctionClass tempFunc = funcList.get(oneLine.get(0).getTokenName());
+                    if (tempFunc.getParamNum() == 0){
+                        gram = JottGrammar.grammar.get("f_call")[1];
+                    } else {
+                        gram = JottGrammar.grammar.get("f_call")[0];
+                    }
+                    for (String g: gram){
+                        Node f_gram = new Node(g, newChild);
+                        newChild.addChild(f_gram);
+                        expandNode(f_gram, oneLine, isFor);
+                    }
+                }
+                else {
+                    System.out.println("Error: Function missing, "+ "\"" + oneLine.get(0).getLine() +"\" (" + oneLine.get(0).getFileName() +":" + oneLine.get(0).getLineNo() +")");
+                    System.exit(-1);
+                }
+            }
+            else if (newChild.getData().equals("fc_p_list")){
+                int counter = 0;
+                Node next = newChild;
+                while(!(oneLine.isEmpty()) && !(oneLine.get(0).getTokenName().equals(")"))) {
+                    Node expr = new Node("expr", next);
+                    next.addChild(expr);
+                    expandNode(expr, oneLine, isFor);
+                    if (oneLine.get(0).getTokenName().equals(",") && funcList.get(lastFuncCall).checkParamType(counter, (String)expr.getChild(0).getData())) {
+                        Node comma = new Node(oneLine.remove(0), next);
+                        next.addChild(comma);
+                        Node fc_p_list = new Node("fc_p_list", next);
+                        next.addChild(fc_p_list);
+                        next = fc_p_list;
+                        counter++;
+                    } else if (!funcList.get(lastFuncCall).checkParamType(counter, (String)expr.getChild(0).getData())) {
+                        System.out.println("Syntax Error: Type Mismatch " + oneLine.get(0).getLine() + "\" (" + oneLine.get(0).getFileName() + ":" + oneLine.get(0).getLineNo() + ")");
+                        System.exit(-1);
+                    }
+                    else if (!(oneLine.get(0).getTokenName().equals(")")) && !(oneLine.get(0).getTokenName().equals(","))) {
+                        System.out.println("Syntax Error: Missing bracket " + "\"" + oneLine.get(0).getLine() + "\" (" + " " + oneLine.get(0).getFileName() + ":" + oneLine.get(0).getLineNo() + ")");
+                        System.exit(0);
+                    }
+                }
+//                Node expr = new Node("expr", newChild);
+//                newChild.addChild(expr);
+//                expandNode(expr, oneLine, isFor);
+//                if (!funcList.get(lastFuncCall).checkParamType(counter, (String)expr.getChild(0).getData())){
+//                    System.out.println("Syntax Error: Type Mismatch" + oneLine.get(0).getLine() +"\" (" + oneLine.get(0).getFileName() +":" + oneLine.get(0).getLineNo() +")");
+//                    System.exit(-1);
+//                }
+//                if (oneLine.get(0).getTokenName().equals(",")){
+//                    Node comma = new Node(oneLine.remove(0), newChild);
+//                    newChild.addChild(comma);
+//                    Node fc_p_list = new Node("fc_p_list", newChild);
+//                    newChild.addChild(fc_p_list);
+////                    expandNode(fc_p_list, oneLine, isFor);
+//                    while(oneLine.get(0).getTokenName().equals(")")){
+//                        Node expr2 = new Node("expr", newChild);
+//                        newChild.addChild(expr2);
+//                        expandNode(expr2, oneLine, isFor);
+//                        if (oneLine.get(0).getTokenName().equals(",")) {
+//                            Node comma2 = new Node(oneLine.remove(0), newChild);
+//                            newChild.addChild(comma2);
+//                            Node fc_p_list2 = new Node("fc_p_list", newChild);
+//                            newChild.addChild(fc_p_list2);
+//                            oneLine.remove(0);
+//                        }
+//                    }
+//                } else if (!oneLine.get(0).getTokenName().equals(")")){
+//                    System.out.println("Syntax Error: Missing \")\", "+ "\"" + oneLine.get(0).getLine() +"\" (" + oneLine.get(0).getFileName() +":" + oneLine.get(0).getLineNo() +")");
+//                    System.exit(-1);
+//                }
             }
             else if (newChild.getData().equals("b_stmt_list")){
                 if (oneLine.get(0).getTokenName().equals("}")){
@@ -332,7 +472,7 @@ public class JottParser {
                 parent.addChild(newInt);
                 Node number = new Node(signedInt, newInt);
                 newInt.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     iExprParse(parent, tokenList, false, false);
                 }
             }
@@ -341,7 +481,7 @@ public class JottParser {
                 parent.addChild(newInt);
                 Node number = new Node(tokenList.remove(0), newInt);
                 newInt.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     iExprParse(parent, tokenList, false, false);
                 }
             }
@@ -352,9 +492,16 @@ public class JottParser {
                 iExpr.addChild(id);
                 Node number = new Node(tokenList.remove(0), id);
                 id.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     iExprParse(parent, tokenList, false, false);
                 }
+            }
+            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && funcList.containsKey(tokenList.get(0).getTokenName()) && funcList.get(tokenList.get(0).getTokenName()).getReturnType().equals("Integer")){
+                Node newInt = new Node("int", parent);
+                parent.addChild(newInt);
+                Node f_call = new Node("f_call", newInt);
+                newInt.addChild(f_call);
+                expandNode(f_call, tokenList, false);
             }
             else{
                 System.out.println("Syntax Error: Type Mismatch: Expected Integer, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
@@ -397,7 +544,7 @@ public class JottParser {
                 parent.addChild(newDbl);
                 Node number = new Node(signedDbl, newDbl);
                 newDbl.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     dExprParse(parent, tokenList, false, false);
                 }
             }
@@ -406,7 +553,7 @@ public class JottParser {
                 parent.addChild(newDbl);
                 Node number = new Node(tokenList.remove(0), newDbl);
                 newDbl.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     dExprParse(parent, tokenList, false, false);
                 }
             }
@@ -417,9 +564,16 @@ public class JottParser {
                 dExpr.addChild(id);
                 Node number = new Node(tokenList.remove(0), id);
                 id.addChild(number);
-                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")")){
+                if (!tokenList.isEmpty() && !tokenList.get(0).getTokenName().substring(0, 1).equals(";") && !tokenList.get(0).getTokenName().substring(0, 1).equals(")") && !tokenList.get(0).getTokenName().substring(0, 1).equals(",")){
                     dExprParse(parent, tokenList, false, false);
                 }
+            }
+            else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && funcList.containsKey(tokenList.get(0).getTokenName()) && funcList.get(tokenList.get(0).getTokenName()).getReturnType().equals("Double")){
+                Node newDbl = new Node("dbl", parent);
+                parent.addChild(newDbl);
+                Node f_call = new Node("f_call", newDbl);
+                newDbl.addChild(f_call);
+                expandNode(f_call, tokenList, false);
             }
             else{
                 System.out.println("Syntax Error: Type Mismatch: Expected Double, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
@@ -478,6 +632,13 @@ public class JottParser {
                 expandNode(newParent, tokenList, false);
             }
         }
+        else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && funcList.containsKey(tokenList.get(0).getTokenName()) && funcList.get(tokenList.get(0).getTokenName()).getReturnType().equals("String")){
+            Node newStr = new Node("str_literal", parent);
+            parent.addChild(newStr);
+            Node f_call = new Node("f_call", newStr);
+            newStr.addChild(f_call);
+            expandNode(f_call, tokenList, false);
+        }
         else{
             System.out.println("Syntax Error: Type Mismatch: Expected String, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
             System.exit(-1);
@@ -505,8 +666,26 @@ public class JottParser {
                 System.out.println("Invalid Type for ID, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
                 System.exit(-1);
             }
-        }
-        else if (tokenList.get(0).getTokenName().equals("-")){
+        } else if (this.lowerCase.contains(tokenList.get(0).getTokenName().substring(0, 1)) && funcList.containsKey(tokenList.get(0).getTokenName())){
+            String retType = funcList.get(tokenList.get(0).getTokenName()).getReturnType();
+            if (retType.equals("Integer")){
+                Node iExpr = new Node("i_expr", parent);
+                parent.addChild(iExpr);
+                iExprParse(iExpr, tokenList, true, false);
+            } else if (retType.equals("Double")){
+                Node dExpr = new Node("d_expr", parent);
+                parent.addChild(dExpr);
+                dExprParse(dExpr, tokenList, true, false);
+            }
+            else if (retType.equals("String")){
+                Node sExpr = new Node("s_expr", parent);
+                parent.addChild(sExpr);
+                sExprParse(sExpr, tokenList);
+            } else{
+                System.out.println("Invalid Type for ID, "+ "\"" + tokenList.get(0).getLine() +"\" (" + tokenList.get(0).getFileName() +":" + tokenList.get(0).getLineNo() +")");
+                System.exit(-1);
+            }
+        } else if (tokenList.get(0).getTokenName().equals("-")){
             if (isInteger(tokenList.get(1).getTokenName())){
                 Node iExpr = new Node("i_expr", parent);
                 parent.addChild(iExpr);
