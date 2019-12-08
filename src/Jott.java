@@ -7,7 +7,6 @@ import scanning.JottScanner;
 import scanning.Token;
 
 import java.util.List;
-import java.util.Map;
 
 public class Jott {
 
@@ -26,10 +25,11 @@ public class Jott {
 //            root.inorderPrint();
             Node decoratedTreeRoot = new Node("program", null);
             JottDecorator decoratoredTree = new JottDecorator();
-            decoratoredTree.decorateParseTree(root.getChild(0), decoratedTreeRoot);
+            decoratoredTree.decorateParseTree(root.getChild(0), decoratedTreeRoot, null);
+
 
             JottRunner runner = new JottRunner();
-            runner.runCode(decoratedTreeRoot);
+            runner.runCode(decoratedTreeRoot, false);
         }catch(IndexOutOfBoundsException e){
             System.out.println("Invalid Syntax Here");
             System.exit(-1);
