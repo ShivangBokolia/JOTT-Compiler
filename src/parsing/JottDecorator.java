@@ -3,14 +3,61 @@ package parsing;
 import scanning.Token;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JottDecorator {
 
     private void getIValues (Node valueNode, Node iExpr){
+
         if (iExpr.getChild(0).getData().equals("int")) {
-            Node terminal = new Node(iExpr.getChild(0).getChild(0).getData(), valueNode);
-            valueNode.addChild(terminal);
+            if (iExpr.getChild(0).getChildren().size() != 0 && iExpr.getChild(0).getChild(0).getData().equals("f_call")){
+                Node fcall = iExpr.getChild(0).getChild(0);
+                Node expr = null;
+                Node funcCall = new Node("func_call", valueNode);
+                valueNode.addChild(funcCall);
+                Node funcName = new Node(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName(), funcCall);
+                funcCall.addChild(funcName);
+                int paramNum = JottParser.funcList.get(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName()).getParamNum();
+                Node paramExpr = new Node("param_expr", funcCall);
+                funcCall.addChild(paramExpr);
+                if (paramNum > 0){
+                    expr = fcall.getChild(2).getChild(0);
+                }
+                for (int i=0; i< paramNum; i++){
+                    Node exprs = new Node("exprs", paramExpr);
+                    paramExpr.addChild(exprs);
+                    String exprsType = (String) expr.getChild(0).getData();
+                    if (exprsType.equals("i_expr")) {
+                        Node iExpres = new Node("i_expres", exprs);
+                        exprs.addChild(iExpres);
+                        Node value = new Node("value", iExpres);
+                        iExpres.addChild(value);
+                        getIValues(value, expr.getChild(0));
+                    } else if (exprsType.equals("d_expr")) {
+                        Node dExpres = new Node("d_expres", exprs);
+                        exprs.addChild(dExpres);
+                        Node value = new Node("value", dExpres);
+                        dExpres.addChild(value);
+                        getDValues(value, expr.getChild(0));
+                    } else {
+                        Node sExpres = new Node("s_expres", exprs);
+                        exprs.addChild(sExpres);
+                        Node value = new Node("value", sExpres);
+                        sExpres.addChild(value);
+                        getSValues(value, expr.getChild(0));
+                    }
+                    if (i != paramNum-1){
+                        expr = expr.getParent().getChild(2).getChild(0);
+                    }
+                }
+
+
+            } else {
+                Node terminal = new Node(iExpr.getChild(0).getChild(0).getData(), valueNode);
+                valueNode.addChild(terminal);
+            }
         } else if (iExpr.getChild(0).getChild(0).getData().equals("id")) {
             Node terminal = new Node(iExpr.getChild(0).getChild(0).getChild(0).getData(), valueNode);
             valueNode.addChild(terminal);
@@ -29,8 +76,50 @@ public class JottDecorator {
 
     private void getDValues (Node valueNode, Node dExpr){
         if (dExpr.getChild(0).getData().equals("dbl")){
-            Node terminal = new Node(dExpr.getChild(0).getChild(0).getData(), valueNode);
-            valueNode.addChild(terminal);
+            if (dExpr.getChild(0).getChildren().size() != 0 && dExpr.getChild(0).getChild(0).getData().equals("f_call")){
+                Node fcall = dExpr.getChild(0).getChild(0);
+                Node expr = null;
+                Node funcCall = new Node("func_call", valueNode);
+                valueNode.addChild(funcCall);
+                Node funcName = new Node(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName(), funcCall);
+                funcCall.addChild(funcName);
+                int paramNum = JottParser.funcList.get(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName()).getParamNum();
+                Node paramExpr = new Node("param_expr", funcCall);
+                funcCall.addChild(paramExpr);
+                if (paramNum > 0){
+                    expr = fcall.getChild(2).getChild(0);
+                }
+                for (int i=0; i< paramNum; i++){
+                    Node exprs = new Node("exprs", paramExpr);
+                    paramExpr.addChild(exprs);
+                    String exprsType = (String) expr.getChild(0).getData();
+                    if (exprsType.equals("i_expr")) {
+                        Node iExpres = new Node("i_expres", exprs);
+                        exprs.addChild(iExpres);
+                        Node value = new Node("value", iExpres);
+                        iExpres.addChild(value);
+                        getIValues(value, expr.getChild(0));
+                    } else if (exprsType.equals("d_expr")) {
+                        Node dExpres = new Node("d_expres", exprs);
+                        exprs.addChild(dExpres);
+                        Node value = new Node("value", dExpres);
+                        dExpres.addChild(value);
+                        getDValues(value, expr.getChild(0));
+                    } else {
+                        Node sExpres = new Node("s_expres", exprs);
+                        exprs.addChild(sExpres);
+                        Node value = new Node("value", sExpres);
+                        sExpres.addChild(value);
+                        getSValues(value, expr.getChild(0));
+                    }
+                    if (i != paramNum-1){
+                        expr = expr.getParent().getChild(2).getChild(0);
+                    }
+                }
+            } else {
+                Node terminal = new Node(dExpr.getChild(0).getChild(0).getData(), valueNode);
+                valueNode.addChild(terminal);
+            }
         } else if (dExpr.getChild(0).getChild(0).getData().equals("id")){
             Node terminal = new Node(dExpr.getChild(0).getChild(0).getChild(0).getData(), valueNode);
             valueNode.addChild(terminal);
@@ -53,8 +142,51 @@ public class JottDecorator {
             valueNode.addChild(terminal);
         }
         else if (sExpr.getChild(0).getData().equals("str_literal")){
-            Node terminal = new Node(sExpr.getChild(0).getChild(0).getData(), valueNode);
-            valueNode.addChild(terminal);
+            if (sExpr.getChild(0).getChildren().size() != 0 && sExpr.getChild(0).getChild(0).getData().equals("f_call")){
+                Node fcall = sExpr.getChild(0).getChild(0);
+                Node expr = null;
+                Node funcCall = new Node("func_call", valueNode);
+                valueNode.addChild(funcCall);
+                Node funcName = new Node(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName(), funcCall);
+                funcCall.addChild(funcName);
+                int paramNum = JottParser.funcList.get(((Token)fcall.getChild(0).getChild(0).getData()).getTokenName()).getParamNum();
+                Node paramExpr = new Node("param_expr", funcCall);
+                funcCall.addChild(paramExpr);
+                if (paramNum > 0){
+                    expr = fcall.getChild(2).getChild(0);
+                }
+                for (int i=0; i< paramNum; i++){
+                    Node exprs = new Node("exprs", paramExpr);
+                    paramExpr.addChild(exprs);
+                    String exprsType = (String) expr.getChild(0).getData();
+                    if (exprsType.equals("i_expr")) {
+                        Node iExpres = new Node("i_expres", exprs);
+                        exprs.addChild(iExpres);
+                        Node value = new Node("value", iExpres);
+                        iExpres.addChild(value);
+                        getIValues(value, expr.getChild(0));
+                    } else if (exprsType.equals("d_expr")) {
+                        Node dExpres = new Node("d_expres", exprs);
+                        exprs.addChild(dExpres);
+                        Node value = new Node("value", dExpres);
+                        dExpres.addChild(value);
+                        getDValues(value, expr.getChild(0));
+                    } else {
+                        Node sExpres = new Node("s_expres", exprs);
+                        exprs.addChild(sExpres);
+                        Node value = new Node("value", sExpres);
+                        sExpres.addChild(value);
+                        getSValues(value, expr.getChild(0));
+                    }
+                    if (i != paramNum-1){
+                        expr = expr.getParent().getChild(2).getChild(0);
+                    }
+                }
+            }
+            else {
+                Node terminal = new Node(sExpr.getChild(0).getChild(0).getData(), valueNode);
+                valueNode.addChild(terminal);
+            }
         }
         else if (((Token)sExpr.getChild(0).getData()).getTokenName().equals("concat")){
             Node concatNode = new Node(sExpr.getChild(0).getData(), valueNode);
@@ -199,8 +331,35 @@ public class JottDecorator {
 //    }
 //}
 
-    public void decorateParseTree(Node pTStmtList, Node decorateParseTreeRoot){
-        if(!pTStmtList.getChild(0).getData().equals("")) {
+    public void decorateParseTree(Node pTStmtList, Node decorateParseTreeRoot, FunctionClass fclass){
+        if (fclass != null && (pTStmtList.getChild(0).getData() instanceof Token) && ((Token)pTStmtList.getChild(0).getData()).getTokenName().equals("return")){
+            Node parseTreeParent = pTStmtList.getChild(1);
+            Node ret = new Node("return", decorateParseTreeRoot);
+            decorateParseTreeRoot.addChild(ret);
+            Node exprs = new Node("exprs", ret);
+            ret.addChild(exprs);
+            String exprsType = (String) parseTreeParent.getChild(0).getData();
+            if (exprsType.equals("i_expr")) {
+                Node iExpres = new Node("i_expres", exprs);
+                exprs.addChild(iExpres);
+                Node value = new Node("value", iExpres);
+                iExpres.addChild(value);
+                getIValues(value, parseTreeParent.getChild(0));
+            } else if (exprsType.equals("d_expr")) {
+                Node dExpres = new Node("d_expres", exprs);
+                exprs.addChild(dExpres);
+                Node value = new Node("value", dExpres);
+                dExpres.addChild(value);
+                getDValues(value, parseTreeParent.getChild(0));
+            } else {
+                Node sExpres = new Node("s_expres", exprs);
+                exprs.addChild(sExpres);
+                Node value = new Node("value", sExpres);
+                sExpres.addChild(value);
+                getSValues(value, parseTreeParent.getChild(0));
+            }
+        }
+        else if(!pTStmtList.getChild(0).getData().equals("")) {
             Node parseTreeParent = pTStmtList.getChild(0).getChild(0);
             if (parseTreeParent.getData().equals("asmt")) {
                 Token idToken = (Token) parseTreeParent.getChild(1).getChild(0).getData();
@@ -228,8 +387,14 @@ public class JottDecorator {
                     getSValues(value, parseTreeParent.getChild(3));
                 }
             } else if (parseTreeParent.getData().equals("r_asmt")) {
+                Map<String, String> symbolTable;
                 Token idToken = (Token) parseTreeParent.getChild(0).getChild(0).getData();
-                String idType = JottParser.symbolTable.get(idToken.getTokenName());
+                if (fclass != null && fclass.getSymbolTable().containsKey(idToken.getTokenName())){
+                    symbolTable = fclass.getSymbolTable();
+                } else {
+                    symbolTable = JottParser.symbolTable;
+                }
+                String idType = symbolTable.get(idToken.getTokenName());
                 Node asgn;
                 if (idType.equals("Integer")) {
                     asgn = new Node("i_asgn", decorateParseTreeRoot);
@@ -275,7 +440,47 @@ public class JottDecorator {
                     sExpres.addChild(value);
                     getSValues(value, parseTreeParent.getChild(2).getChild(0));
                 }
-            } else if (parseTreeParent.getData().equals("expr") && parseTreeParent.getParent().getData().equals("stmt")) {
+            } else if (parseTreeParent.getData().equals("f_call")){
+                Node expr = null;
+                Node funcCall = new Node("func_call", decorateParseTreeRoot);
+                decorateParseTreeRoot.addChild(funcCall);
+                Node funcName = new Node(((Token)parseTreeParent.getChild(0).getChild(0).getData()).getTokenName(), funcCall);
+                funcCall.addChild(funcName);
+                int paramNum = JottParser.funcList.get(((Token)parseTreeParent.getChild(0).getChild(0).getData()).getTokenName()).getParamNum();
+                Node paramExpr = new Node("param_expr", funcCall);
+                funcCall.addChild(paramExpr);
+                if (paramNum > 0){
+                    expr = parseTreeParent.getChild(2).getChild(0);
+                }
+                for (int i=0; i< paramNum; i++){
+                    Node exprs = new Node("exprs", paramExpr);
+                    paramExpr.addChild(exprs);
+                    String exprsType = (String) expr.getChild(0).getData();
+                    if (exprsType.equals("i_expr")) {
+                        Node iExpres = new Node("i_expres", exprs);
+                        exprs.addChild(iExpres);
+                        Node value = new Node("value", iExpres);
+                        iExpres.addChild(value);
+                        getIValues(value, expr.getChild(0));
+                    } else if (exprsType.equals("d_expr")) {
+                        Node dExpres = new Node("d_expres", exprs);
+                        exprs.addChild(dExpres);
+                        Node value = new Node("value", dExpres);
+                        dExpres.addChild(value);
+                        getDValues(value, expr.getChild(0));
+                    } else {
+                        Node sExpres = new Node("s_expres", exprs);
+                        exprs.addChild(sExpres);
+                        Node value = new Node("value", sExpres);
+                        sExpres.addChild(value);
+                        getSValues(value, expr.getChild(0));
+                    }
+                    if (i != paramNum-1){
+                        expr = expr.getParent().getChild(2).getChild(0);
+                    }
+                }
+            }
+            else if (parseTreeParent.getData().equals("expr") && parseTreeParent.getParent().getData().equals("stmt")) {
                 Node exprs = new Node("exprs", decorateParseTreeRoot);
                 decorateParseTreeRoot.addChild(exprs);
                 String exprsType = (String) parseTreeParent.getChild(0).getData();
@@ -328,7 +533,7 @@ public class JottDecorator {
                 }
                 Node if_body = new Node("if_body", if_decl);
                 if_decl.addChild(if_body);
-                decorateParseTree(pTStmtList.getChild(0).getChild(5), if_body);
+                decorateParseTree(pTStmtList.getChild(0).getChild(5), if_body, fclass);
             }
 
             //if and else
@@ -362,7 +567,7 @@ public class JottDecorator {
                 }
                 Node if_body = new Node("if_body", if_decl);
                 if_decl.addChild(if_body);
-                decorateParseTree(pTStmtList.getChild(0).getChild(5), if_body);
+                decorateParseTree(pTStmtList.getChild(0).getChild(5), if_body, fclass);
 
                 //Else:
 
@@ -370,7 +575,7 @@ public class JottDecorator {
                 if_else.addChild(else_decl);
                 Node else_body = new Node("else_body", else_decl);
                 else_decl.addChild(else_body);
-                decorateParseTree(pTStmtList.getChild(0).getChild(9), else_body);
+                decorateParseTree(pTStmtList.getChild(0).getChild(9), else_body, fclass);
             }
 
             // While Loop
@@ -387,7 +592,7 @@ public class JottDecorator {
                 getIValues(value, pTStmtList.getChild(0).getChild(2));
                 Node while_body = new Node("while_body", while_decl);
                 while_decl.addChild(while_body);
-                decorateParseTree(pTStmtList.getChild(0).getChild(5), while_body);
+                decorateParseTree(pTStmtList.getChild(0).getChild(5), while_body, fclass);
             }
 
             //For Loop
@@ -432,10 +637,15 @@ public class JottDecorator {
                 //Body
                 Node for_body = new Node("for_body", for_decl);
                 for_decl.addChild(for_body);
-                decorateParseTree(pTStmtList.getChild(0).getChild(8), for_body);
+                decorateParseTree(pTStmtList.getChild(0).getChild(8), for_body, fclass);
+            }
+            else if (parseTreeParent.getData() instanceof FunctionClass){
+                FunctionClass func = (FunctionClass)parseTreeParent.getData();
+                decorateParseTree(func.getBody(), func.getDecoratedBody(), func);
             }
 
-            decorateParseTree(pTStmtList.getChild(1), decorateParseTreeRoot);
+
+            decorateParseTree(pTStmtList.getChild(1), decorateParseTreeRoot, fclass);
         }
     }
 }
